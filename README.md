@@ -1,0 +1,2 @@
+# infowiki
+Simple MediaWiki Clone
