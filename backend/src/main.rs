@@ -1,15 +1,17 @@
 use actix_web::{  post, web::Json, App, HttpResponse, HttpServer, Responder };
 use serde::Deserialize;
 use serde_derive::Deserialize;
-use std::fs::File;
-use std::io::prelude::*;
-
+use actix_cors::Cors;
+mod createpage;
 
 
 #[actix_web::main]
 async fn main() {
     HttpServer::new( move ||  {
+        let cors = Cors::default()
+            .allow_any_origin();
         App::new()
+            .wrap(cors)
             .service(hello)
     })
         .bind("0.0.0.0:3000")
@@ -19,13 +21,16 @@ async fn main() {
         .unwrap()
 }
 
-#[post("/user")]
+#[post("/createpage")]
 async fn hello(info : Json<Info>) -> impl Responder {
-    std::fs::create_dir_all(format!("{}",info.name));
-    let mut file = File::create(format!("{}/{}markdown.md",info.name,info.name));
-    let text: String = format!("{}",info.text);
-    file.expect("REASON").write_all(text.as_bytes());
-    let msg = format!("name: {}, age: {}", info.name, info.text);
+    let success: bool = createpage::create_page(info.name.clone(), info.text.clone());
+    let mut msg = String::new();
+    if success == true {
+        msg = format!("Created Page: {}",info.name);
+    } else {
+        msg = format!("Failed to create Page: {}",info.name)
+    }
+    
     HttpResponse::Ok().body(msg)
 }
 
