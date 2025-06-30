@@ -1,32 +1,35 @@
-use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer,Responder,get,post};
+use actix_web::{  post, web::Json, App, HttpResponse, HttpServer, Responder };
+use serde::Deserialize;
 use serde_derive::Deserialize;
-use actix_cors::Cors;
-use reqwest::header::USER_AGENT;
-use reqwest::Client;
+use std::fs::File;
+use std::io::prelude::*;
 
-#[derive(Debug, Deserialize)]
-pub struct Params {
-    url: String,
-}
-#[derive(Deserialize)]
-struct Info {
-    username: String,
-}
 
-/// deserialize `Info` from request's body
-#[post("/createpage")]
-async fn index(info: web::Json<Info>) -> String {
-    format!("Welcome {}!", info.username)
-}
 
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| {
-        let cors = Cors::default()
-            .allow_any_origin();
-        App::new().wrap(cors).service(index)
+async fn main() {
+    HttpServer::new( move ||  {
+        App::new()
+            .service(hello)
     })
-    .bind(("127.0.0.1", 8080))?
-    .run()
-    .await
+        .bind("0.0.0.0:3000")
+        .unwrap()
+        .run()
+        .await
+        .unwrap()
+}
+
+#[post("/user")]
+async fn hello(info : Json<Info>) -> impl Responder {
+    let mut file = File::create(format!("{}.txt",info.name));
+    let text: String = format!("{}",info.age);
+    file.expect("REASON").write_all(text.as_bytes());
+    let msg = format!("name: {}, age: {}", info.name, info.age);
+    HttpResponse::Ok().body(msg)
+}
+
+#[derive(Deserialize)]
+struct Info {
+    name: String,
+    age: i32
 }
