@@ -1,2 +1,2 @@
 # infowiki
-Simple MediaWiki Clone
+Simple MediaWiki Clone (WIP)
