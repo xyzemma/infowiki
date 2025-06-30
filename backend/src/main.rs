@@ -1,25 +1,30 @@
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer,Responder,get,post};
+use serde_derive::Deserialize;
+use actix_cors::Cors;
+use reqwest::header::USER_AGENT;
+use reqwest::Client;
 
-#[get("/")]
-async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Hello world!")
+#[derive(Debug, Deserialize)]
+pub struct Params {
+    url: String,
+}
+#[derive(Deserialize)]
+struct Info {
+    username: String,
 }
 
-#[post("/echo")]
-async fn echo(req_body: String) -> impl Responder {
-    HttpResponse::Ok().body(req_body)
+/// deserialize `Info` from request's body
+#[post("/createpage")]
+async fn index(info: web::Json<Info>) -> String {
+    format!("Welcome {}!", info.username)
 }
 
-async fn manual_hello() -> impl Responder {
-    HttpResponse::Ok().body("Hey there!")
-}
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
-        App::new()
-            .service(hello)
-            .service(echo)
-            .route("/hey", web::get().to(manual_hello))
+        let cors = Cors::default()
+            .allow_any_origin();
+        App::new().wrap(cors).service(index)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
