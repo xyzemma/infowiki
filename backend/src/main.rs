@@ -23,12 +23,15 @@ async fn main() {
 
 #[post("/createpage")]
 async fn hello(info : Json<Info>) -> impl Responder {
-    let success: bool = createpage::create_page(info.name.clone(), info.text.clone());
+    let success: createpage::CrpResp = createpage::create_page(info.name.clone(), info.text.clone());
     let mut msg = String::new();
-    if success == true {
-        msg = format!("Created Page: {}",info.name);
-    } else {
-        msg = format!("Failed to create Page: {}",info.name)
+    match success {
+        createpage::CrpResp::Success => {
+            msg = format!("Succesfully created page {}",info.name);
+        }
+        createpage::CrpResp::Error(error) => {
+            msg = error;
+        }
     }
     
     HttpResponse::Ok().body(msg)
