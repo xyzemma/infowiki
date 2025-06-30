@@ -21,15 +21,16 @@ async fn main() {
 
 #[post("/user")]
 async fn hello(info : Json<Info>) -> impl Responder {
-    let mut file = File::create(format!("{}.txt",info.name));
-    let text: String = format!("{}",info.age);
+    std::fs::create_dir_all(format!("{}",info.name));
+    let mut file = File::create(format!("{}/{}markdown.md",info.name,info.name));
+    let text: String = format!("{}",info.text);
     file.expect("REASON").write_all(text.as_bytes());
-    let msg = format!("name: {}, age: {}", info.name, info.age);
+    let msg = format!("name: {}, age: {}", info.name, info.text);
     HttpResponse::Ok().body(msg)
 }
 
 #[derive(Deserialize)]
 struct Info {
     name: String,
-    age: i32
+    text: String
 }
