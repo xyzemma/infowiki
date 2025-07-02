@@ -7,7 +7,8 @@ grammar = """
     std: /[^_\*\`\[\]>]+/ 
     italic: "_"textpart+"_" | "*"textpart+"*"
     bold: "__"textpart+"__" | "**"textpart+"**"
-    code: "`"textpart+"`"
+    code: "`" codetext "`"
+    codetext: /[^`]+/
     quote: ">"textpart+"<"
     newline: "[br]"
     start: section+
@@ -18,8 +19,8 @@ grammar = """
     box: boxstart boxcontent boxend
     boxstart: "[!" CNAME "]" | "[! " CNAME "]"
     boxcontent: keyvalue+
-    keyvalue: key "[:]" value
-    key: "[!]"textpart
+    keyvalue: "[" key "[:]" value "]"
+    key: textpart
     value: textpart
     boxend: "[!/ " "]" | "[!/" CNAME "]"
 
@@ -35,8 +36,8 @@ __Hello__ is a word. [br]
 `print("hello world");`
 [#/phead]
 [! infobox]
-[!]title [:] xyz
-[!]img [:] xyz
+[title [:] xyz]
+[img [:] xyz]
 [!/ infobox]
 """
 parser = Lark(grammar)
