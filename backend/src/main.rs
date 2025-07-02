@@ -1,5 +1,4 @@
 use actix_web::{  post, web::Json, App, HttpResponse, HttpServer, Responder };
-use serde::Deserialize;
 use serde_derive::Deserialize;
 use actix_cors::Cors;
 mod createpage;
