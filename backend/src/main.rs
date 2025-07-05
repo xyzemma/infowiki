@@ -1,7 +1,10 @@
 use actix_web::{  get, post, web::Json,web::Path, App, HttpResponse, HttpServer, Responder };
 use serde_derive::Deserialize;
 use actix_cors::Cors;
+
+use crate::getpage::getpagefn;
 mod createpage;
+mod getpage;
 
 
 #[actix_web::main]
@@ -19,8 +22,8 @@ async fn main() {
             .allow_any_origin();
         App::new()
             .wrap(cors)
-            .service(hello)
-            .service(getpage)
+            .service(createpagesrv)
+            .service(getpagesrv)
     })
         .bind("0.0.0.0:3000")
         .unwrap()
@@ -30,7 +33,7 @@ async fn main() {
 }
 
 #[post("/createpage")]
-async fn hello(info : Json<Info>) -> impl Responder {
+async fn createpagesrv(info : Json<Info>) -> impl Responder {
     let success: createpage::CrpResp = createpage::create_page(info.name.clone(), info.text.clone());
     let mut msg = String::new();
     match success {
@@ -46,17 +49,8 @@ async fn hello(info : Json<Info>) -> impl Responder {
 }
 
 #[get("/wiki/{name}")]
-async fn getpage(path: Path<String>) -> impl Responder {
-    let name = path.into_inner();
-    let namepath: String = String::from(format!("pages/{name}/{name}html.html"));
-    let namepath = namepath.as_str();
-    if std::path::Path::new(namepath).exists() {
-        let html = String::from(std::fs::read_to_string(namepath).unwrap());
-        HttpResponse::Ok().body(format!("{}",html))
-    }
-    else {
-        HttpResponse::Ok().body("Page not found")
-    }
+async fn getpagesrv(path: Path<String>) -> impl Responder {
+    getpagefn(path)
 }
 
 #[derive(Deserialize)]
