@@ -1,4 +1,4 @@
-use actix_web::{  get, post, web::Json, App, HttpResponse, HttpServer, Responder };
+use actix_web::{  get, post, web::Json,web::Path, App, HttpResponse, HttpServer, Responder };
 use serde_derive::Deserialize;
 use actix_cors::Cors;
 mod createpage;
@@ -46,8 +46,17 @@ async fn hello(info : Json<Info>) -> impl Responder {
 }
 
 #[get("/wiki/{name}")]
-async fn getpage(name:String) -> impl Responder {
-    HttpResponse::Ok().body("test")
+async fn getpage(path: Path<String>) -> impl Responder {
+    let name = path.into_inner();
+    let namepath: String = String::from(format!("pages/{name}/{name}html.html"));
+    let namepath = namepath.as_str();
+    if std::path::Path::new(namepath).exists() {
+        let html = String::from(std::fs::read_to_string(namepath).unwrap());
+        HttpResponse::Ok().body(format!("{}",html))
+    }
+    else {
+        HttpResponse::Ok().body("Page not found")
+    }
 }
 
 #[derive(Deserialize)]

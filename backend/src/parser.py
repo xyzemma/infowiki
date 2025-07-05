@@ -45,8 +45,12 @@ tree = parser.parse(source)
 
 def traverse_tree(node):
     if isinstance(node, Tree):
-        if node.data == "start":
-            htmlfile = open("test.html","w+")
+        global htmltext
+        htmltext = f"""<!DOCTYPE html>
+<head title="{pagetitle}"
+<body>
+<h1>{pagetitle}<h1>
+<hr><br>"""
 
         print(f"Tree: {node.data}")
 
@@ -60,4 +64,7 @@ def parsefile(source_code):
     tree = parser.parse(source_code)
     traverse_tree(tree)
 
+pagetitle = "test"
 traverse_tree(tree)
+htmltext = htmltext + "\n</body>"
+print(htmltext)
