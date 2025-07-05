@@ -42,4 +42,22 @@ __Hello__ is a word. [br]
 """
 parser = Lark(grammar)
 tree = parser.parse(source)
-print(tree.pretty())
+
+def traverse_tree(node):
+    if isinstance(node, Tree):
+        if node.data == "start":
+            htmlfile = open("test.html","w+")
+
+        print(f"Tree: {node.data}")
+
+        for child in node.children:
+            traverse_tree(child)
+
+    elif isinstance(node, Token):
+        print(f"Token: {node.type} -> {node.value}")
+
+def parsefile(source_code):
+    tree = parser.parse(source_code)
+    traverse_tree(tree)
+
+traverse_tree(tree)
