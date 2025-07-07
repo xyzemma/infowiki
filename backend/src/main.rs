@@ -1,22 +1,16 @@
 use actix_web::{  get, post, web::Json,web::Path, App, HttpResponse, HttpServer, Responder };
 use serde_derive::Deserialize;
 use actix_cors::Cors;
-
 use crate::getpage::getpagefn;
+mod init;
 mod createpage;
 mod getpage;
+mod parse;
 
 
 #[actix_web::main]
 async fn main() {
-    if std::path::Path::new("pages").exists() != true {
-        match std::fs::create_dir_all(format!("pages")) {
-            Ok(_) => {}
-            Err(error) => {
-                println!("{}",error)
-            }
-        }
-    }
+    init::init();
     HttpServer::new( move ||  {
         let cors = Cors::default()
             .allow_any_origin();
