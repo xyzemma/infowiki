@@ -1,7 +1,7 @@
 use std::fs::read_to_string;
 use serde_json;
 
-pub fn init() {
+pub fn init() -> (String, String) {
     let config = match read_to_string("config.json") {
         Ok(val) => {val}
         Err(err) => {
@@ -24,4 +24,5 @@ pub fn init() {
             }
         }
     }
+    return (mainpath,pagepath)
 }
