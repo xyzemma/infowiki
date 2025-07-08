@@ -1,53 +1,37 @@
-WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
+WHITESPACE = _{ " " | "\t" | "\n" }
+NEWLINE = _{ "[br]" }
+
+text = { textpart+ }
+
+textpart = { bold | italic | code | quote | std | NEWLINE }
+
+std = { (!("_" | "*" | "`" | "[" | "]" | ">" | "<") ~ ANY)+ }
+
+italic = { "_" ~ textpart+ ~ "_" | "*" ~ textpart+ ~ "*" }
+
+bold = { "__" ~ textpart+ ~ "__" | "**" ~ textpart+ ~ "**" }
+
+code = { "`" ~ codetext ~ "`" }
+codetext = { (!"`" ~ ANY)+ }
+
+quote = { ">" ~ textpart+ ~ "<" }
 
 start = { section+ }
 
 section = { box | pagesection }
 
 pagesection = { psstart ~ text* ~ psend }
-
-psstart = { "[# " ~ CNAME ~ "]" | "[#" ~ CNAME ~ "]" }
-
-psend = { "[#/ " ~ CNAME ~ "]" | "[#/" ~ CNAME ~ "]" }
+psstart = { "[#" ~ CNAME ~ "]" | "[# " ~ CNAME ~ "]" }
+psend = { "[#/" ~ CNAME ~ "]" | "[#/ " ~ CNAME ~ "]" }
 
 box = { boxstart ~ boxcontent ~ boxend }
-
 boxstart = { "[!" ~ CNAME ~ "]" | "[! " ~ CNAME ~ "]" }
-
 boxcontent = { keyvalue+ }
 
-keyvalue = { "[" ~ key ~ "[:" ~ value ~ "]" }
+keyvalue = { "[" ~ key ~ "[:]" ~ value ~ "]" }
+key = { textpart+ }
+value = { textpart+ }
 
-key = { textpart }
+boxend = { "[!/" ~ "]" | "[!/" ~ CNAME ~ "]" }
 
-value = { textpart }
-
-boxend = { "[!/ " ~ "]" | "[!/" ~ CNAME ~ "]" }
-
-text = { textpart+ }
-
-textpart = { bold | italic | code | newline | quote | std }
-
-std = { (!("_" | "*" | "`" | "[" | "]" | ">" | "\n") ~ ANY)+ }
-
-italic = {
-    ("_" ~ textpart+ ~ "_")
-    |
-    ("*" ~ textpart+ ~ "*")
-}
-
-bold = {
-    ("__" ~ textpart+ ~ "__")
-    |
-    ("**" ~ textpart+ ~ "**")
-}
-
-code = { "`" ~ codetext ~ "`" }
-
-codetext = { (!"`" ~ ANY)+ }
-
-quote = { ">" ~ textpart+ ~ "<" }
-
-newline = { "[br]" }
-
-CNAME = @{ (ASCII_ALPHANUMERIC | "_")+ }
+CNAME = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }

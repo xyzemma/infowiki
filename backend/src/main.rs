@@ -10,6 +10,7 @@ mod parse;
 
 #[actix_web::main]
 async fn main() {
+    parse::parse();
     init::init();
     HttpServer::new( move ||  {
         let cors = Cors::default()
