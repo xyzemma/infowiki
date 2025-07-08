@@ -1,0 +1,53 @@
+WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
+
+start = { section+ }
+
+section = { box | pagesection }
+
+pagesection = { psstart ~ text* ~ psend }
+
+psstart = { "[# " ~ CNAME ~ "]" | "[#" ~ CNAME ~ "]" }
+
+psend = { "[#/ " ~ CNAME ~ "]" | "[#/" ~ CNAME ~ "]" }
+
+box = { boxstart ~ boxcontent ~ boxend }
+
+boxstart = { "[!" ~ CNAME ~ "]" | "[! " ~ CNAME ~ "]" }
+
+boxcontent = { keyvalue+ }
+
+keyvalue = { "[" ~ key ~ "[:" ~ value ~ "]" }
+
+key = { textpart }
+
+value = { textpart }
+
+boxend = { "[!/ " ~ "]" | "[!/" ~ CNAME ~ "]" }
+
+text = { textpart+ }
+
+textpart = { bold | italic | code | newline | quote | std }
+
+std = { (!("_" | "*" | "`" | "[" | "]" | ">" | "\n") ~ ANY)+ }
+
+italic = {
+    ("_" ~ textpart+ ~ "_")
+    |
+    ("*" ~ textpart+ ~ "*")
+}
+
+bold = {
+    ("__" ~ textpart+ ~ "__")
+    |
+    ("**" ~ textpart+ ~ "**")
+}
+
+code = { "`" ~ codetext ~ "`" }
+
+codetext = { (!"`" ~ ANY)+ }
+
+quote = { ">" ~ textpart+ ~ "<" }
+
+newline = { "[br]" }
+
+CNAME = @{ (ASCII_ALPHANUMERIC | "_")+ }
