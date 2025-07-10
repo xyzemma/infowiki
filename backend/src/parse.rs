@@ -11,7 +11,11 @@ pub fn parse(source: String, pagename: String,pagedir: &String) {
     let htmlpath = format!("{}/{}/{}html.html",pagedir,pagename,pagename);
     let mut reshtml: String =  format!(
 r#"<!DOCTYPE html>
-<head title="{pagename}"
+<head>
+<title>
+{pagename}
+</title>
+</head>
 <body>
 <h1>{pagename}<h1>
 <hr><br>"#
@@ -51,10 +55,7 @@ fn traverse(pair: pest::iterators::Pair<Rule>, reshtml: String) -> String{
         Rule::quote => {
             let mut content = String::from("");
             for inner in pair.clone().into_inner() {
-                if inner.as_rule() == Rule::CNAME {
-                    content = String::from(inner.as_str());
-                    break;
-                }
+                content = traverse(inner, content);
             }
             reshtml.push_str(format!("<q>{}</q>\n",content).as_str());
         }
