@@ -18,13 +18,13 @@ quote = { ">" ~ textpart+ ~ "<" }
 
 start = { section+ }
 
-section = { box | pagesection }
+section = { boxsection | pagesection }
 
 pagesection = { psstart ~ text* ~ psend }
 psstart = { "[#" ~ CNAME ~ "]" | "[# " ~ CNAME ~ "]" }
 psend = { "[#/" ~ CNAME ~ "]" | "[#/ " ~ CNAME ~ "]" }
 
-box = { boxstart ~ boxcontent ~ boxend }
+boxsection = { boxstart ~ boxcontent ~ boxend }
 boxstart = { "[!" ~ CNAME ~ "]" | "[! " ~ CNAME ~ "]" }
 boxcontent = { keyvalue+ }
 

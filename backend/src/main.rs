@@ -11,7 +11,7 @@ mod parse;
 #[actix_web::main]
 async fn main() {
     let (maindir,pagedir) = init::init();
-    parse::parse(String::from(r#"[# phead]__Hello__ is a word. [br]`print("hello world");`[#/phead][! infobox][title [:] xyz][img [:] xyz][!/ infobox]"#),String::from("test"),&pagedir);
+    parse::parse(String::from(r#"[# phead]__Hello__ >is a word<. [br]`print("hello world");`[#/phead][! infobox][title [:] xyz][img [:] xyz][!/ infobox]"#),String::from("test"),&pagedir);
     HttpServer::new( move ||  {
         let cors = Cors::default()
             .allow_any_origin();

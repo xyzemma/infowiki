@@ -20,24 +20,101 @@ r#"<!DOCTYPE html>
     match result {
         Ok(pairs) => {
             for pair in pairs {
-                traverse(pair,reshtml);
+                reshtml = traverse(pair,reshtml);
             }
         }
         Err(e) => {
-            eprintln!("Parsing error: {}", e);
+            println!("Parsing error: {}", e);
         }
     }
+    reshtml.push_str("</body>");
+    println!("{}",reshtml);
 }
 
-fn traverse(pair: pest::iterators::Pair<Rule>, reshtml: String) {
+fn traverse(pair: pest::iterators::Pair<Rule>, reshtml: String) -> String{
+    let mut reshtml = reshtml;
     match pair.as_rule() {
         Rule::start => {}
-        Rule::NEWLINE => {reshtml.push("
-        ")}
-        Rule::psstart => {}
+        Rule::WHITESPACE => {}
+        Rule::CNAME => {}
+        Rule::code => {}
+        Rule::text => {}
+        Rule::textpart => {}
+        Rule::section => {}
+        Rule::pagesection => {}
+        Rule::boxsection => {}
+        Rule::boxcontent => {}
+        Rule::keyvalue => {}
+        Rule::key => {}
+        Rule::value => {}
+        Rule::std => {reshtml.push_str(format!("<p>{}</p>\n",pair.as_str()).as_str());}
+        Rule::quote => {
+            let mut content = String::from("");
+            for inner in pair.clone().into_inner() {
+                if inner.as_rule() == Rule::CNAME {
+                    content = String::from(inner.as_str());
+                    break;
+                }
+            }
+            reshtml.push_str(format!("<q>{}</q>\n",content).as_str());
+        }
+        Rule::bold => {reshtml.push_str(format!("<b>{}</b>\n",pair.as_str().replace("__", "")).as_str());}
+        Rule::italic => {reshtml.push_str(format!("<i>{}</i>\n",pair.as_str().replace("_", "")).as_str());}
+        Rule::NEWLINE => {reshtml.push_str("<br>");}
+        Rule::psstart => {
+            let mut id = String::new();
+            for inner in pair.clone().into_inner() {
+                if inner.as_rule() == Rule::CNAME {
+                    id = String::from(inner.as_str());
+                    break;
+                }
+            }
+            reshtml.push_str(format!("<div id={}><h2>{}</h2><hr><br>\n",id,id).as_str());
+        }
+        Rule::psend => {
+            let mut id = String::from("");
+            for inner in pair.clone().into_inner() {
+                if inner.as_rule() == Rule::CNAME {
+                    id = String::from(inner.as_str());
+                    break;
+                }
+            }
+            if id != String::from("") {
+                reshtml.push_str(format!("</div id={}><br>\n",id).as_str());
+            } else {
+                reshtml.push_str("</div><br>\n");
+            }
+        }
+        Rule::boxstart => {
+            let mut id = String::new();
+            for inner in pair.clone().into_inner() {
+                if inner.as_rule() == Rule::CNAME {
+                    id = String::from(inner.as_str());
+                    break;
+                }
+            }
+            reshtml.push_str(format!("<div id={}><h2>{}</h2><hr><br>\n",id,id).as_str());
+        }
+        Rule::boxend => {
+            let mut id = String::from("");
+            for inner in pair.clone().into_inner() {
+                if inner.as_rule() == Rule::CNAME {
+                    id = String::from(inner.as_str());
+                    break;
+                }
+            }
+            if id != String::from("") {
+                reshtml.push_str(format!("</div id={}><br>\n",id).as_str());
+            } else {
+                reshtml.push_str("</div><br>\n");
+            }
+        }
+        Rule::codetext => {reshtml.push_str(format!("<code>{}</code>\n",pair.as_str()).as_str());} 
     }
+    let indent = 0;
     println!("{:indent$}{:?} => {}", "", pair.as_rule(), pair.as_str());
     for inner in pair.into_inner() {
-        traverse(inner);
+        reshtml = traverse(inner, reshtml);
     }
+    return reshtml;
 }
