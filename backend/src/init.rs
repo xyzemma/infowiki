@@ -5,13 +5,13 @@ pub fn init() -> (String, String) {
     let config = match read_to_string("config.json") {
         Ok(val) => {val}
         Err(err) => {
-            println!("Error initialising Infowiki: Config file could not be read.");
+            println!("Error initialising Infowiki: Config file could not be read: {}",err);
             panic!()}
     };
     let configjson: serde_json::Value = match serde_json::from_str(config.as_str()) {
         Ok(val) => {val}
         Err(err) => {
-        println!("Error initialising Infowiki: Config file could not be processed.");
+        println!("Error initialising Infowiki: Config file could not be processed: {}",err);
             panic!()}
     };
     let mainpath: String = format!("{}",configjson["path"]);

@@ -112,8 +112,6 @@ fn traverse(pair: pest::iterators::Pair<Rule>, reshtml: String) -> String{
         }
         Rule::codetext => {reshtml.push_str(format!("<code>{}</code>\n",pair.as_str()).as_str());} 
     }
-    let indent = 0;
-    println!("{:indent$}{:?} => {}", "", pair.as_rule(), pair.as_str());
     for inner in pair.into_inner() {
         reshtml = traverse(inner, reshtml);
     }
