@@ -1,5 +1,8 @@
 use std::fs::File;
 use std::io::prelude::*;
+
+use crate::parse;
+
 pub enum CrpResp {
     Success,
     Error(String)
@@ -24,7 +27,6 @@ pub fn create_page(name: String,text:String) -> CrpResp {
         }
     };
     let mdtext: String = format!("{}",text);
-    let htmltext:String = markdown::to_html(&mdtext);
     match wtfile.write_all(mdtext.as_bytes()) {
         Ok(_) => {
         }
@@ -32,6 +34,7 @@ pub fn create_page(name: String,text:String) -> CrpResp {
             return CrpResp::Error(String::from(format!("Failed to create page '{}': {}",name,error)));
         }
     }
+    let htmltext:String = parse::parse(mdtext,&name);
     match htmlfile.write_all(htmltext.as_bytes()) {
         Ok(_) => {
             return CrpResp::Success;

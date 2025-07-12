@@ -1,14 +1,11 @@
 use pest::Parser;
 use pest_derive::Parser;
-use std::fs::File;
-use std::io::{Error,Write};
 
 #[derive(Parser)]
 #[grammar = "grammar.pest"] 
 pub struct MarkupParser;
 
-pub fn parse(source: String, pagename: String,pagedir: &String) {
-    let htmlpath = format!("{}/{}/{}html.html",pagedir,pagename,pagename);
+pub fn parse(source: String, pagename: &String) -> String {
     let mut reshtml: String =  format!(
 r#"<!DOCTYPE html>
 <head>
@@ -17,7 +14,25 @@ r#"<!DOCTYPE html>
 </title>
 </head>
 <body>
-<h1>{pagename}<h1>
+<style>
+h1 {{
+  font-size: 40px;
+  font-family: 'Linux Libertine','Georgia','Times','Source Serif Pro',serif;
+  font-weight: 600;
+  margin-bottom: 0.1%;
+    }}
+
+h2 {{
+font-size: 30px;
+    }}
+hr {{
+  margin-bottom: 1px;
+    }}
+body {{
+  font-size: 16px;
+}}
+</style>
+<h1>{pagename}</h1>
 <hr><br>"#
 );
     let result = MarkupParser::parse(Rule::start, source.as_str());
@@ -32,11 +47,12 @@ r#"<!DOCTYPE html>
         }
     }
     reshtml.push_str("</body>");
-    println!("{}",reshtml);
+    return reshtml;
 }
 
 fn traverse(pair: pest::iterators::Pair<Rule>, reshtml: String) -> String{
     let mut reshtml = reshtml;
+    let mut processedinner = false;
     match pair.as_rule() {
         Rule::start => {}
         Rule::WHITESPACE => {}
@@ -51,16 +67,33 @@ fn traverse(pair: pest::iterators::Pair<Rule>, reshtml: String) -> String{
         Rule::keyvalue => {}
         Rule::key => {}
         Rule::value => {}
-        Rule::std => {reshtml.push_str(format!("<p>{}</p>\n",pair.as_str()).as_str());}
+        Rule::std => {reshtml.push_str(format!("{} ",pair.as_str()).as_str());}
         Rule::quote => {
             let mut content = String::from("");
             for inner in pair.clone().into_inner() {
                 content = traverse(inner, content);
             }
-            reshtml.push_str(format!("<q>{}</q>\n",content).as_str());
+            processedinner = true;
+            reshtml.push_str(format!("<q>{}</q>",content).as_str());
         }
-        Rule::bold => {reshtml.push_str(format!("<b>{}</b>\n",pair.as_str().replace("__", "")).as_str());}
-        Rule::italic => {reshtml.push_str(format!("<i>{}</i>\n",pair.as_str().replace("_", "")).as_str());}
+        Rule::bold => {
+            let mut content = String::from("");
+            for inner in pair.clone().into_inner() {
+                content = traverse(inner, content);
+            }
+            processedinner = true;
+
+            reshtml.push_str(format!("<b>{}</b>",content).as_str());
+        }
+        Rule::italic => {
+            let mut content = String::from("");
+            for inner in pair.clone().into_inner() {
+                content = traverse(inner, content);
+            }
+            processedinner = true;
+
+            reshtml.push_str(format!("<i>{}</i>",content).as_str());
+        }
         Rule::NEWLINE => {reshtml.push_str("<br>");}
         Rule::psstart => {
             let mut id = String::new();
@@ -70,7 +103,12 @@ fn traverse(pair: pest::iterators::Pair<Rule>, reshtml: String) -> String{
                     break;
                 }
             }
-            reshtml.push_str(format!("<div id={}><h2>{}</h2><hr><br>\n",id,id).as_str());
+            if id != String::from("phead") {
+                processedinner = true;
+                reshtml.push_str(format!("<div id={}><h2>{}</h2><hr><br>\n",id,id).as_str());
+            } else {
+                processedinner = false;
+            }
         }
         Rule::psend => {
             let mut id = String::from("");
@@ -80,6 +118,7 @@ fn traverse(pair: pest::iterators::Pair<Rule>, reshtml: String) -> String{
                     break;
                 }
             }
+            processedinner = true;
             if id != String::from("") {
                 reshtml.push_str(format!("</div id={}><br>\n",id).as_str());
             } else {
@@ -94,6 +133,7 @@ fn traverse(pair: pest::iterators::Pair<Rule>, reshtml: String) -> String{
                     break;
                 }
             }
+            processedinner = true;
             reshtml.push_str(format!("<div id={}><h2>{}</h2><hr><br>\n",id,id).as_str());
         }
         Rule::boxend => {
@@ -104,6 +144,7 @@ fn traverse(pair: pest::iterators::Pair<Rule>, reshtml: String) -> String{
                     break;
                 }
             }
+            processedinner = true;
             if id != String::from("") {
                 reshtml.push_str(format!("</div id={}><br>\n",id).as_str());
             } else {
@@ -112,8 +153,10 @@ fn traverse(pair: pest::iterators::Pair<Rule>, reshtml: String) -> String{
         }
         Rule::codetext => {reshtml.push_str(format!("<code>{}</code>\n",pair.as_str()).as_str());} 
     }
-    for inner in pair.into_inner() {
-        reshtml = traverse(inner, reshtml);
+    if !processedinner {
+        for inner in pair.into_inner() {
+            reshtml = traverse(inner, reshtml);
     }
+}
     return reshtml;
 }
