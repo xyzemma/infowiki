@@ -25,3 +25,7 @@
 - Search
 
 - Elements like Infoboxes
+
+# Considerations
+
+- Actual front-end code might not be neccessary
