@@ -1,7 +1,11 @@
 use std::fs::read_to_string;
 use serde_json;
+use mysql::prelude::*;
+use mysql::*;
+
 
 pub fn init() -> (String, String) {
+    
     let config = match read_to_string("config.json") {
         Ok(val) => {val}
         Err(err) => {
