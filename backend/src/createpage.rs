@@ -34,7 +34,7 @@ pub fn create_page(name: String,text:String) -> CrpResp {
             return CrpResp::Error(String::from(format!("Failed to create page '{}': {}",name,error)));
         }
     }
-    let htmltext:String = parse::parse(mdtext,&name);
+    let (htmltext, _) = parse::parse(mdtext,&name);
     match htmlfile.write_all(htmltext.as_bytes()) {
         Ok(_) => {
             return CrpResp::Success;
