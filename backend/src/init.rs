@@ -1,11 +1,14 @@
 use std::fs::read_to_string;
 use serde_json;
-use mysql::prelude::*;
-use mysql::*;
+use dotenv::dotenv;
+use postgres::{Client,NoTls};
 
 
 pub fn init() -> (String, String) {
-    
+    dotenv().ok();
+    let dbhost = std::env::var("DBHOST").expect("DBHOST must be set.");
+    let dbuser = std::env::var("DBUSER").expect("DBUSER must be set");
+    let mut dbclient = Client::connect(format!("host={dbhost} user={dbuser}").as_str(), NoTls);
     let config = match read_to_string("config.json") {
         Ok(val) => {val}
         Err(err) => {
