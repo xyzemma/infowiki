@@ -1,14 +1,18 @@
 use std::fs::read_to_string;
 use serde_json;
-use dotenv::dotenv;
-use postgres::{Client,NoTls};
+use rusqlite::{params,Connection,Result};
+use std::time::{SystemTime,UNIX_EPOCH};
 
+#[derive(Debug)]
+struct Page {
+    id: u32,
+    name: String,
+    created_at: u64,
+    text: String,
+}
 
-pub fn init() -> (String, String) {
-    dotenv().ok();
-    let dbhost = std::env::var("DBHOST").expect("DBHOST must be set.");
-    let dbuser = std::env::var("DBUSER").expect("DBUSER must be set");
-    let mut dbclient = Client::connect(format!("host={dbhost} user={dbuser}").as_str(), NoTls);
+pub async fn init() -> (String, String) {
+    dbinit();
     let config = match read_to_string("config.json") {
         Ok(val) => {val}
         Err(err) => {
@@ -32,4 +36,38 @@ pub fn init() -> (String, String) {
         }
     }
     return (mainpath,pagepath)
+}
+
+pub fn dbinit() -> Result<()> {
+    let conn: Connection = Connection::open("db.db3")?;
+    match conn.execute("CREATE TABLE page (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    created_at INTEGER,
+    text TEXT NOT NULL
+    )", ()) {
+        Ok(_) => {},
+        Err(e) => {return Err(e);}
+    }
+    let testpage = Page {
+        id: 0,
+        name: "test".to_string(),
+        created_at: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs(),
+        text: "Hello World".to_string(),
+    };
+    conn.execute("INSERT INTO page (name,text,created_at) VALUES (?1,?2,?3)", (&testpage.name,&testpage.text,&testpage.created_at))?;
+    let mut stmt = conn.prepare("SELECT id, name, created_at, text FROM page")?;
+    let page_iter = stmt.query_map([], |row| {
+        Ok(Page {
+            id: row.get(0)?,
+            name: row.get(1)?,
+            created_at: row.get(2)?,
+            text: row.get(3)?,
+        })
+    })?;
+
+    for page in page_iter {
+        println!("Found page {:?}", page?);
+    }
+    Ok(())
 }
