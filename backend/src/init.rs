@@ -4,11 +4,11 @@ use rusqlite::{params,Connection,Result};
 use std::time::{SystemTime,UNIX_EPOCH};
 
 #[derive(Debug)]
-struct Page {
-    id: u32,
-    name: String,
-    created_at: u64,
-    text: String,
+pub struct Page {
+    pub id: u32,
+    pub name: String,
+    pub created_at: u64,
+    pub text: String,
 }
 
 pub async fn init() -> (String, String) {
@@ -49,13 +49,6 @@ pub fn dbinit() -> Result<()> {
         Ok(_) => {},
         Err(e) => {return Err(e);}
     }
-    let testpage = Page {
-        id: 0,
-        name: "test".to_string(),
-        created_at: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs(),
-        text: "Hello World".to_string(),
-    };
-    conn.execute("INSERT INTO page (name,text,created_at) VALUES (?1,?2,?3)", (&testpage.name,&testpage.text,&testpage.created_at))?;
     let mut stmt = conn.prepare("SELECT id, name, created_at, text FROM page")?;
     let page_iter = stmt.query_map([], |row| {
         Ok(Page {
