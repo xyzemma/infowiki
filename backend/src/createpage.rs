@@ -3,6 +3,7 @@ use std::io::prelude::*;
 use std::time::{SystemTime,UNIX_EPOCH};
 use crate::parse;
 use crate::init::Page;
+use rusqlite::ffi::Error;
 use rusqlite::{Connection,params,Result};
 
 pub enum CrpResp {
@@ -10,7 +11,12 @@ pub enum CrpResp {
     Error(String)
 }
 pub fn create_page(name: String,text:String) -> CrpResp {
-    let conn: Connection = Connection::open("db.db3").expect("ERROR");
+    let conn: Connection = match Connection::open("db.db3") {
+        Ok(conn) => {conn}
+        Err(error) => {
+            return CrpResp::Error(format!("{}",error));
+        }
+    };
     match std::fs::create_dir_all(format!("pages/{}",name)) {
         Ok(_) => {}
         Err(error) => {
