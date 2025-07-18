@@ -1,7 +1,8 @@
+use core::panic;
 use std::fs::read_to_string;
 use serde_json;
 use rusqlite::{params,Connection,Result};
-use std::time::{SystemTime,UNIX_EPOCH};
+use git2::Repository;
 
 #[derive(Debug)]
 pub struct Page {
@@ -11,8 +12,20 @@ pub struct Page {
     pub text: String,
 }
 
-pub async fn init() -> (String, String) {
-    dbinit();
+pub async fn init() -> (String, String, Repository) {
+    let repo = match Repository::open("pages") {
+        Ok(repo) => repo,
+        Err(_) => {
+            match Repository::init("pages") {
+                Ok(repo) => repo,
+                Err(e) => panic!("Error initialising git repo: {}",e)
+            }
+        } 
+    };
+    match dbinit() {
+        Ok(_) => {},
+        Err(e) => panic!("Error initialising database: {}",e)
+    };
     let config = match read_to_string("config.json") {
         Ok(val) => {val}
         Err(err) => {
@@ -35,20 +48,27 @@ pub async fn init() -> (String, String) {
             }
         }
     }
-    return (mainpath,pagepath)
+    return (mainpath,pagepath,repo)
 }
 
 pub fn dbinit() -> Result<()> {
     let conn: Connection = Connection::open("db.db3")?;
-    match conn.execute("CREATE TABLE page (
-    id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL,
-    created_at INTEGER,
-    text TEXT NOT NULL
-    )", ()) {
-        Ok(_) => {},
-        Err(e) => {return Err(e);}
+    match conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='page'",()) {
+        Ok(_) => {
+            match conn.execute("CREATE TABLE page (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                created_at INTEGER,
+                text TEXT NOT NULL
+                )", ()) {
+                    Ok(_) => {},
+                    Err(e) => {return Err(e);}
+                }
+        },
+        Err(_) => {}
+        
     }
+    
     let mut stmt = conn.prepare("SELECT id, name, created_at, text FROM page")?;
     let page_iter = stmt.query_map([], |row| {
         Ok(Page {

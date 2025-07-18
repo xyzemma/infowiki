@@ -10,7 +10,7 @@ mod parse;
 
 #[actix_web::main]
 async fn main() {
-    let (maindir,pagedir) = init::init().await;
+    let (maindir,pagedir,repo) = init::init().await;
     HttpServer::new( move ||  {
         let cors = Cors::default()
             .allow_any_origin();
