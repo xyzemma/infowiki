@@ -5,34 +5,31 @@ use crate::parse;
 use crate::init::Page;
 use rusqlite::ffi::Error;
 use rusqlite::{Connection,params,Result};
+use crate::init::IwResp;
 
-pub enum CrpResp {
-    Success,
-    Error(String)
-}
-pub fn create_page(name: String,text:String) -> CrpResp {
+pub fn create_page(name: String,text:String) -> IwResp {
     let conn: Connection = match Connection::open("db.db3") {
         Ok(conn) => {conn}
         Err(error) => {
-            return CrpResp::Error(format!("{}",error));
+            return IwResp::Error(format!("{}",error));
         }
     };
     match std::fs::create_dir_all(format!("pages/{}",name)) {
         Ok(_) => {}
         Err(error) => {
-            return CrpResp::Error(String::from(format!("{}",error)))
+            return IwResp::Error(String::from(format!("{}",error)))
         }
     }
     let mut wtfile = match File::create(format!("pages/{}/{}markdown.md",name,name)) {
         Ok(result) => {result}
         Err(error) => {
-            return CrpResp::Error(String::from(format!("{}",error)))
+            return IwResp::Error(String::from(format!("{}",error)))
         }
     };
     let mut htmlfile = match File::create(format!("pages/{}/{}html.html",name,name)) {
         Ok(result) => {result}
         Err(error) => {
-            return CrpResp::Error(String::from(format!("{}",error)))
+            return IwResp::Error(String::from(format!("{}",error)))
         }
     };
     let mdtext: String = format!("{}",text);
@@ -40,7 +37,7 @@ pub fn create_page(name: String,text:String) -> CrpResp {
         Ok(_) => {
         }
         Err(error) => {
-            return CrpResp::Error(String::from(format!("Failed to create page '{}': {}",name,error)));
+            return IwResp::Error(String::from(format!("Failed to create page '{}': {}",name,error)));
         }
     }
     let (htmltext, plaintext) = parse::parse(mdtext,&name);
@@ -53,10 +50,10 @@ pub fn create_page(name: String,text:String) -> CrpResp {
     conn.execute("INSERT INTO page (name,text,created_at) VALUES (?1,?2,?3)", (&pagesql.name,&pagesql.text,&pagesql.created_at)).expect("ERROR");
     match htmlfile.write_all(htmltext.as_bytes()) {
         Ok(_) => {
-            return CrpResp::Success;
+            return IwResp::Success;
         }
         Err(error) => {
-            return CrpResp::Error(String::from(format!("Failed to create page '{}': {}",name,error)));
+            return IwResp::Error(String::from(format!("Failed to create page '{}': {}",name,error)));
         }
     }
 }

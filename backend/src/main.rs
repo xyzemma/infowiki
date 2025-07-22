@@ -7,7 +7,6 @@ mod createpage;
 mod getpage;
 mod parse;
 
-
 #[actix_web::main]
 async fn main() {
     let (maindir,pagedir,repo) = init::init().await;
@@ -28,13 +27,13 @@ async fn main() {
 
 #[post("/createpage")]
 async fn createpagesrv(info : Json<Info>) -> impl Responder {
-    let success: createpage::CrpResp = createpage::create_page(info.name.clone(), info.text.clone());
+    let success = createpage::create_page(info.name.clone(), info.text.clone());
     let mut msg = String::new();
     match success {
-        createpage::CrpResp::Success => {
+        init::IwResp::Success => {
             msg = format!("Succesfully created page {}",info.name);
         }
-        createpage::CrpResp::Error(error) => {
+        init::IwResp::Error(error) => {
             msg = error;
         }
     }

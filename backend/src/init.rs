@@ -4,6 +4,11 @@ use serde_json;
 use rusqlite::{params,Connection,Result};
 use git2::Repository;
 
+pub enum IwResp {
+    Success,
+    Error(String)
+}
+
 #[derive(Debug)]
 pub struct Page {
     pub id: u32,
