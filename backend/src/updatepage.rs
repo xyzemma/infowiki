@@ -1,6 +1,7 @@
 use crate::parse::parse;
-use git2::Repository;
+use crate::init::IwResp;
 
-pub fn update(newtext: String) {
-    
-}
+pub fn update(newtext: String) -> IwResp {
+
+    return IwResp::Success;
+} 

@@ -6,10 +6,11 @@ mod init;
 mod createpage;
 mod getpage;
 mod parse;
+mod updatepage;
 
 #[actix_web::main]
 async fn main() {
-    let (maindir,pagedir,repo) = init::init().await;
+    let (maindir,pagedir) = init::init().await;
     HttpServer::new( move ||  {
         let cors = Cors::default()
             .allow_any_origin();

@@ -2,7 +2,6 @@ use core::panic;
 use std::fs::read_to_string;
 use serde_json;
 use rusqlite::{params,Connection,Result};
-use git2::Repository;
 
 pub enum IwResp {
     Success,
@@ -17,16 +16,7 @@ pub struct Page {
     pub text: String,
 }
 
-pub async fn init() -> (String, String, Repository) {
-    let repo = match Repository::open("pages") {
-        Ok(repo) => repo,
-        Err(_) => {
-            match Repository::init("pages") {
-                Ok(repo) => repo,
-                Err(e) => panic!("Error initialising git repo: {}",e)
-            }
-        } 
-    };
+pub async fn init() -> (String, String) {
     match dbinit() {
         Ok(_) => {},
         Err(e) => panic!("Error initialising database: {}",e)
@@ -53,7 +43,7 @@ pub async fn init() -> (String, String, Repository) {
             }
         }
     }
-    return (mainpath,pagepath,repo)
+    return (mainpath,pagepath)
 }
 
 pub fn dbinit() -> Result<()> {
