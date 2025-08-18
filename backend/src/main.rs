@@ -7,6 +7,8 @@ mod createpage;
 mod getpage;
 mod parse;
 mod updatepage;
+mod versioncontrol;
+mod users;
 
 #[actix_web::main]
 async fn main() {
