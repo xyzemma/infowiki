@@ -18,12 +18,13 @@ pub struct Version {
 } 
 
 pub fn lineify(txt: String) -> Vec<Line> {
-
+    let mut rvec: Vec<Line> = Vec::new();
+    let mut ln: u64 = 1;
     for i in txt.lines() {
-        println!("{}",i);
-
+        rvec.push(Line { content: String::from(i), linenumber: ln });
+        ln += 1;
     }
-    return Vec::new();
+    return rvec;
 }
 pub fn commit(){
 }
