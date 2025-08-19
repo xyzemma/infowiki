@@ -1,2 +1,2 @@
 # infowiki
-Simple MediaWiki Clone (WIP)
+Wiki Engine written in Rust. Work in Progress
