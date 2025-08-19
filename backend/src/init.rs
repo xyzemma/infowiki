@@ -17,10 +17,6 @@ pub struct Page {
 }
 
 pub async fn init() -> (String, String) {
-    match dbinit() {
-        Ok(_) => {},
-        Err(e) => panic!("Error initialising database: {}",e)
-    };
     let config = match read_to_string("config.json") {
         Ok(val) => {val}
         Err(err) => {
@@ -33,8 +29,12 @@ pub async fn init() -> (String, String) {
         println!("Error initialising Infowiki: Config file could not be processed: {}",err);
             panic!()}
     };
-    let mainpath: String = format!("{}",configjson["path"]);
+    let mainpath: String = format!("{}",configjson["path"]).replace('"', "");
     let pagepath = format!("{}/pages",mainpath);
+        match dbinit(&mainpath) {
+        Ok(_) => {},
+        Err(e) => panic!("Error initialising database: {}",e)
+    };
     if std::path::Path::new(&pagepath).exists() != true {
         match std::fs::create_dir_all(format!("pages")) {
             Ok(_) => {}
@@ -46,8 +46,8 @@ pub async fn init() -> (String, String) {
     return (mainpath,pagepath)
 }
 
-pub fn dbinit() -> Result<()> {
-    let conn: Connection = Connection::open("db.db3")?;
+pub fn dbinit(path: &String) -> Result<()> {
+    let conn: Connection = Connection::open(format!("{}/db.db3",path.as_str()))?;
     match conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='page'",()) {
         Ok(_) => {
             match conn.execute("CREATE TABLE page (

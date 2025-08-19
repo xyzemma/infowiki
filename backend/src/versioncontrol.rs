@@ -1,20 +1,21 @@
 use crate::init::Page;
 use crate::users;
 
+#[derive(Clone)]
 pub struct Line {
-    content: String,
-    linenumber: u64,
+    pub content: String,
+    pub linenumber: u64,
 }
 pub struct Diff {
-    added: Vec<Line>,
-    removed: Vec<Line>,
+    pub added: Vec<Line>,
+    pub removed: Vec<Line>,
 }
 
 pub struct Version {
-    id: u64,
-    diff: Diff,
-    timestamp: u64,
-    author: users::User,
+    pub id: u64,
+    pub diff: Diff,
+    pub timestamp: u64,
+    pub author: users::User,
 } 
 
 pub fn lineify(txt: String) -> Vec<Line> {
@@ -26,5 +27,26 @@ pub fn lineify(txt: String) -> Vec<Line> {
     }
     return rvec;
 }
+
+pub fn diff(old: Vec<Line>,new: Vec<Line>) -> Diff {
+    let mut all: Vec<Line> = Vec::new();
+    let mut added: Vec<Line> = Vec::new();
+    let mut removed: Vec<Line> = Vec::new();
+    all.extend(old.clone());
+    all.extend(new.clone());
+    for i in all {
+        if new.iter().any(|s| s.content == i.content) && !old.iter().any(|s| s.content == i.content) {
+            added.push(i.clone())
+        }
+        if !new.iter().any(|s| s.content == i.content) && old.iter().any(|s| s.content == i.content) {
+            removed.push(i)
+        }
+    }
+    return Diff {
+        added: added,
+        removed: removed,
+    }
+}
+
 pub fn commit(){
 }
