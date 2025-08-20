@@ -6,10 +6,7 @@ use serde_json::{Result as sjr,Value,Error as serr};
 use serde::{Deserialize, Serialize};
 use serde_derive::{Deserialize,Serialize};
 
-pub enum gv_resp {
-    Ok(Vec<Version>),
-    Err(String)
-}
+
 #[derive(Clone,Debug,Serialize,Deserialize)]
 pub struct Line {
     pub content: String,
@@ -59,7 +56,7 @@ pub fn diff(old: Vec<Line>,new: Vec<Line>) -> Diff {
     }
 }
 
-pub fn get_versions(p: Page,path: String) -> Result<gv_resp,sqlerr> {
+pub fn get_versions(p: Page,path: String) -> Result<Vec<Version>,sqlerr> {
     let mut rvec: Vec<Version> = Vec::new();
     let conn: Connection = Connection::open(format!("{}/db.db3",path.as_str()))?;
     let mut stmt = conn.prepare("SELECT versionnum, author, timestamp, diff FROM page")?;
@@ -78,7 +75,7 @@ pub fn get_versions(p: Page,path: String) -> Result<gv_resp,sqlerr> {
     for v in v_iter {
         rvec.push(v.unwrap());
     }
-    return Ok(gv_resp::Ok(rvec));
+    return Ok(rvec);
 }
 
 pub fn deserialize_diff(input: String) -> Result<Diff,serr> {
