@@ -72,10 +72,8 @@ pub fn dbinit(path: &String) -> Result<()> {
                 page TEXT NOT NULL,
                 author INTEGER,
                 versionnum INTEGER,
-                diff_added_ln INTEGER [],
-                diff_added_c TEXT [],
-                diff_removed_ln INTEGER [],
-                diff_removed_c TEXT []
+                timestamp INTEGER,
+                diff TEXT NOT NULL
                 )", ()) {
                     Ok(_) => {},
                     Err(e) => {return Err(e);}
