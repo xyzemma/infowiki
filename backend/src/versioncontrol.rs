@@ -1,12 +1,15 @@
 use crate::init::Page;
 use crate::users;
 use actix_web::Error;
-use rusqlite::{params,Connection,Result as sqlres};
+use rusqlite::{params,Connection,Result as sqlres,Error as sqlerr};
 use serde_json::{Result as sjr,Value,Error as serr};
 use serde::{Deserialize, Serialize};
 use serde_derive::{Deserialize,Serialize};
 
-
+pub enum gv_resp {
+    Ok(Vec<Version>),
+    Err(String)
+}
 #[derive(Clone,Debug,Serialize,Deserialize)]
 pub struct Line {
     pub content: String,
@@ -56,7 +59,7 @@ pub fn diff(old: Vec<Line>,new: Vec<Line>) -> Diff {
     }
 }
 
-/*pub fn get_versions(p: Page,path: String) -> Result<Vec<Version>> {
+pub fn get_versions(p: Page,path: String) -> Result<gv_resp,sqlerr> {
     let mut rvec: Vec<Version> = Vec::new();
     let conn: Connection = Connection::open(format!("{}/db.db3",path.as_str()))?;
     let mut stmt = conn.prepare("SELECT versionnum, author, timestamp, diff FROM page")?;
@@ -65,16 +68,18 @@ pub fn diff(old: Vec<Line>,new: Vec<Line>) -> Diff {
             id: row.get(0)?,
             author: row.get(1)?,
             timestamp: row.get(2)?,
-            text: row.get(3)?,
-            current_version: row.get(4)?,
+            diff: match row.get(3) {
+                Ok(v) => {deserialize_diff(v).unwrap()}
+                Err(_) => {return Err(sqlerr::QueryReturnedNoRows)},
+            }
         })
     })?;
 
     for v in v_iter {
-        rvec.push(v);
+        rvec.push(v.unwrap());
     }
-    Ok(rvec)
-}*/
+    return Ok(gv_resp::Ok(rvec));
+}
 
 pub fn deserialize_diff(input: String) -> Result<Diff,serr> {
     let diff: Diff = serde_json::from_str(input.as_str())?;
