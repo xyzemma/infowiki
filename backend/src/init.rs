@@ -14,6 +14,7 @@ pub struct Page {
     pub name: String,
     pub created_at: u64,
     pub text: String,
+    pub current_version: u64,
 }
 
 pub async fn init() -> (String, String) {
@@ -54,7 +55,27 @@ pub fn dbinit(path: &String) -> Result<()> {
                 id INTEGER PRIMARY KEY,
                 name TEXT NOT NULL,
                 created_at INTEGER,
-                text TEXT NOT NULL
+                text TEXT NOT NULL,
+                currentversion INTEGER
+                )", ()) {
+                    Ok(_) => {},
+                    Err(e) => {return Err(e);}
+                }
+        },
+        Err(_) => {}
+        
+    }
+    match conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='versions'",()) {
+        Ok(_) => {
+            match conn.execute("CREATE TABLE versions (
+                id INTEGER PRIMARY KEY,
+                page TEXT NOT NULL,
+                author INTEGER,
+                versionnum INTEGER,
+                diff_added_ln INTEGER [],
+                diff_added_c TEXT [],
+                diff_removed_ln INTEGER [],
+                diff_removed_c TEXT []
                 )", ()) {
                     Ok(_) => {},
                     Err(e) => {return Err(e);}
@@ -64,13 +85,14 @@ pub fn dbinit(path: &String) -> Result<()> {
         
     }
     
-    let mut stmt = conn.prepare("SELECT id, name, created_at, text FROM page")?;
+    let mut stmt = conn.prepare("SELECT id, name, created_at, text, currentversion FROM page")?;
     let page_iter = stmt.query_map([], |row| {
         Ok(Page {
             id: row.get(0)?,
             name: row.get(1)?,
             created_at: row.get(2)?,
             text: row.get(3)?,
+            current_version: row.get(4)?,
         })
     })?;
 

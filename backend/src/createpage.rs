@@ -46,6 +46,7 @@ pub fn create_page(name: String,text:String) -> IwResp {
         name: name.to_string(),
         created_at: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs(),
         text: plaintext.to_string(),
+        current_version: 0,
     };
     conn.execute("INSERT INTO page (name,text,created_at) VALUES (?1,?2,?3)", (&pagesql.name,&pagesql.text,&pagesql.created_at)).expect("ERROR");
     match htmlfile.write_all(htmltext.as_bytes()) {

@@ -48,5 +48,5 @@ pub fn diff(old: Vec<Line>,new: Vec<Line>) -> Diff {
     }
 }
 
-pub fn commit(){
-}
+//pub fn commit(p: Page,newtext:String) -> (Page,Version) {
+//}
