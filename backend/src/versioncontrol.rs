@@ -59,7 +59,7 @@ pub fn diff(old: Vec<Line>,new: Vec<Line>) -> Diff {
 pub fn get_versions(p: Page,path: String) -> Result<Vec<Version>,sqlerr> {
     let mut rvec: Vec<Version> = Vec::new();
     let conn: Connection = Connection::open(format!("{}/db.db3",path.as_str()))?;
-    let mut stmt = conn.prepare("SELECT versionnum, author, timestamp, diff FROM page")?;
+    let mut stmt = conn.prepare(format!("SELECT versionnum, author, timestamp, diff FROM version WHERE page='{}'",p.name).as_str())?;
     let v_iter = stmt.query_map([], |row| {
         Ok(Version {
             id: row.get(0)?,
