@@ -12,6 +12,16 @@ mod users;
 
 #[actix_web::main]
 async fn main() {
+    let is_debug: bool = match std::env::var("DEBUG") {
+        Ok(val) => {
+            if val == String::from("true") {
+                true
+            } else {
+                false
+            }
+        },
+        Err(e) => {panic!("{e}")}
+    };
     let (maindir,pagedir) = init::init().await;
     HttpServer::new( move ||  {
         let cors = Cors::default()
