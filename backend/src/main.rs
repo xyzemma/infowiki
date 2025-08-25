@@ -1,6 +1,9 @@
+use actix_web::guard::Get;
 use actix_web::{  get, post, web::Json,web::Path, App, HttpResponse, HttpServer, Responder };
 use serde_derive::Deserialize;
 use actix_cors::Cors;
+use std::fs::{remove_file,remove_dir_all};
+use std::process;
 use crate::getpage::getpagefn;
 mod init;
 mod createpage;
@@ -26,11 +29,22 @@ async fn main() {
     HttpServer::new( move ||  {
         let cors = Cors::default()
             .allow_any_origin();
-        App::new()
-            .wrap(cors)
-            .service(createpagesrv)
-            .service(getpagesrv)
-    })
+        match is_debug {
+            false => {
+                App::new()
+                .wrap(cors)
+                .service(createpagesrv)
+                .service(getpagesrv)
+            }
+            true => {
+                App::new()
+                .wrap(cors)
+                .service(createpagesrv)
+                .service(getpagesrv)
+                .service(debugquitsrv)
+            }
+    }
+})
         .bind("0.0.0.0:3000")
         .unwrap()
         .run()
@@ -40,7 +54,15 @@ async fn main() {
 
 #[post("/debugquit")]
 async fn debugquitsrv() -> impl Responder {
-
+    let (mainpath,pagepath) = match init::get_paths() {
+        Ok(val) => val,
+        Err(e) => {
+            panic!("{}",e.errormsg)
+        }
+    };
+    remove_dir_all(pagepath).unwrap();
+    remove_file(format!("{}/db.db3",mainpath)).unwrap();
+    process::exit(0);
     HttpResponse::Ok().body("Quitting...")
 }
 #[post("/createpage")]
