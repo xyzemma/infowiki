@@ -5,31 +5,31 @@ use crate::parse;
 use crate::init::Page;
 use rusqlite::ffi::Error;
 use rusqlite::{Connection,params,Result};
-use crate::init::IwResp;
+use crate::init::{IwResp,IwError};
 
 pub fn create_page(name: String,text:String) -> IwResp {
     let conn: Connection = match Connection::open("db.db3") {
         Ok(conn) => {conn}
         Err(error) => {
-            return IwResp::Error(format!("{}",error));
+            return IwResp::Error(IwError {errormsg: format!("{}",error),timestamp: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs()});
         }
     };
     match std::fs::create_dir_all(format!("pages/{}",name)) {
         Ok(_) => {}
         Err(error) => {
-            return IwResp::Error(String::from(format!("{}",error)))
+            return IwResp::Error(IwError {errormsg: String::from(format!("{}",error)),timestamp: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs()})
         }
     }
     let mut wtfile = match File::create(format!("pages/{}/{}markdown.md",name,name)) {
         Ok(result) => {result}
         Err(error) => {
-            return IwResp::Error(String::from(format!("{}",error)))
+            return IwResp::Error(IwError {errormsg: String::from(format!("{}",error)),timestamp: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs()})
         }
     };
     let mut htmlfile = match File::create(format!("pages/{}/{}html.html",name,name)) {
         Ok(result) => {result}
         Err(error) => {
-            return IwResp::Error(String::from(format!("{}",error)))
+            return IwResp::Error(IwError {errormsg: String::from(format!("{}",error)), timestamp: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs()})
         }
     };
     let mdtext: String = format!("{}",text);
@@ -37,7 +37,7 @@ pub fn create_page(name: String,text:String) -> IwResp {
         Ok(_) => {
         }
         Err(error) => {
-            return IwResp::Error(String::from(format!("Failed to create page '{}': {}",name,error)));
+            return IwResp::Error(IwError {errormsg: String::from(format!("Failed to create page '{}': {}",name,error)),timestamp: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs()});
         }
     }
     let (htmltext, plaintext) = parse::parse(mdtext,&name);
@@ -54,7 +54,7 @@ pub fn create_page(name: String,text:String) -> IwResp {
             return IwResp::Success;
         }
         Err(error) => {
-            return IwResp::Error(String::from(format!("Failed to create page '{}': {}",name,error)));
+            return IwResp::Error(IwError {errormsg: String::from(format!("Failed to create page '{}': {}",name,error)), timestamp: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs()});
         }
     }
 }

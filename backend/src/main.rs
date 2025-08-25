@@ -38,6 +38,11 @@ async fn main() {
         .unwrap()
 }
 
+#[post("/debugquit")]
+async fn debugquitsrv() -> impl Responder {
+
+    HttpResponse::Ok().body("Quitting...")
+}
 #[post("/createpage")]
 async fn createpagesrv(info : Json<Info>) -> impl Responder {
     let success = createpage::create_page(info.name.clone(), info.text.clone());
@@ -47,7 +52,7 @@ async fn createpagesrv(info : Json<Info>) -> impl Responder {
             msg = format!("Succesfully created page {}",info.name);
         }
         init::IwResp::Error(error) => {
-            msg = error;
+            msg = error.errormsg;
         }
     }
     

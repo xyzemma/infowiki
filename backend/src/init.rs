@@ -5,7 +5,12 @@ use rusqlite::{params,Connection,Result};
 
 pub enum IwResp {
     Success,
-    Error(String)
+    Error(IwError)
+}
+
+pub struct IwError {
+    pub errormsg: String,
+    pub timestamp: u64,
 }
 
 #[derive(Debug)]
@@ -18,6 +23,20 @@ pub struct Page {
 }
 
 pub async fn init() -> (String, String) {
+    let (mainpath,pagepath) = match get_paths() {
+        Ok(val) => val,
+        Err(e) => {
+            panic!("{}",e.errormsg)
+        }
+    };
+    match dbinit(&mainpath) {
+        Ok(_) => {},
+        Err(e) => panic!("Error initialising database: {}",e)
+    };
+    return (mainpath,pagepath)
+}
+
+pub fn get_paths() -> Result<(String,String),IwError> {
     let config = match read_to_string("config.json") {
         Ok(val) => {val}
         Err(err) => {
@@ -32,10 +51,6 @@ pub async fn init() -> (String, String) {
     };
     let mainpath: String = format!("{}",configjson["path"]).replace('"', "");
     let pagepath = format!("{}/pages",mainpath);
-        match dbinit(&mainpath) {
-        Ok(_) => {},
-        Err(e) => panic!("Error initialising database: {}",e)
-    };
     if std::path::Path::new(&pagepath).exists() != true {
         match std::fs::create_dir_all(format!("pages")) {
             Ok(_) => {}
@@ -44,7 +59,7 @@ pub async fn init() -> (String, String) {
             }
         }
     }
-    return (mainpath,pagepath)
+    Ok((mainpath,pagepath))
 }
 
 pub fn dbinit(path: &String) -> Result<()> {
