@@ -5,7 +5,7 @@ use crate::parse;
 use crate::init::Page;
 use rusqlite::ffi::Error;
 use rusqlite::{Connection,params,Result};
-use crate::init::{IwResp,IwError};
+use crate::errorhandling::{IwResp,IwError};
 
 pub fn create_page(name: String,text:String) -> IwResp {
     let conn: Connection = match Connection::open("db.db3") {

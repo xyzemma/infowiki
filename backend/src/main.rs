@@ -12,6 +12,7 @@ mod parse;
 mod updatepage;
 mod versioncontrol;
 mod users;
+mod errorhandling;
 
 #[actix_web::main]
 async fn main() {
@@ -70,10 +71,10 @@ async fn createpagesrv(info : Json<Info>) -> impl Responder {
     let success = createpage::create_page(info.name.clone(), info.text.clone());
     let mut msg = String::new();
     match success {
-        init::IwResp::Success => {
+        errorhandling::IwResp::Success => {
             msg = format!("Succesfully created page {}",info.name);
         }
-        init::IwResp::Error(error) => {
+        errorhandling::IwResp::Error(error) => {
             msg = error.errormsg;
         }
     }

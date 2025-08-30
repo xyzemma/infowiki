@@ -1,5 +1,5 @@
 use crate::parse::parse;
-use crate::init::IwResp;
+use crate::errorhandling::IwResp;
 
 pub fn update(newtext: String) -> IwResp {
 

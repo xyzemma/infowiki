@@ -2,16 +2,8 @@ use core::panic;
 use std::fs::read_to_string;
 use serde_json;
 use rusqlite::{params,Connection,Result};
+use crate::errorhandling::{IwError,IwResp};
 
-pub enum IwResp {
-    Success,
-    Error(IwError)
-}
-
-pub struct IwError {
-    pub errormsg: String,
-    pub timestamp: u64,
-}
 
 #[derive(Debug)]
 pub struct Page {
