@@ -26,7 +26,7 @@ async fn main() {
         },
         Err(e) => {panic!("{e}")}
     };
-    let (maindir,pagedir) = init::init().await;
+    let (maindir,pagedir,pid) = init::init().await;
     HttpServer::new( move ||  {
         let cors = Cors::default()
             .allow_any_origin();

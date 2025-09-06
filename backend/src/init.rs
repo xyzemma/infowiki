@@ -1,8 +1,11 @@
 use core::panic;
 use std::fs::read_to_string;
+use std::fs::File;
 use serde_json;
 use rusqlite::{params,Connection,Result};
-use crate::errorhandling::{IwError,IwResp};
+use crate::errorhandling;
+use crate::{errorhandling::{IwError,IwResp}, main};
+use std::time::{SystemTime,UNIX_EPOCH};
 
 
 #[derive(Debug)]
@@ -14,7 +17,8 @@ pub struct Page {
     pub current_version: u64,
 }
 
-pub async fn init() -> (String, String) {
+
+pub async fn init() -> (String,String,String,File) {
     let (mainpath,pagepath) = match get_paths() {
         Ok(val) => val,
         Err(e) => {
@@ -25,8 +29,20 @@ pub async fn init() -> (String, String) {
         Ok(_) => {},
         Err(e) => panic!("Error initialising database: {}",e)
     };
-    return (mainpath,pagepath)
+
+    let pid: String = format!("iw_{}",SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs());
+    let mut logfile: File;
+    match File::create(format!("{}/logs",mainpath)) {
+        Ok(v) => {
+            logfile = v;
+        },
+        Err(e) => {
+            panic!("{}",e)
+        }
+    }
+    return (mainpath,pagepath,pid,logfile)
 }
+
 
 pub fn get_paths() -> Result<(String,String),IwError> {
     let config = match read_to_string("config.json") {
