@@ -3,7 +3,6 @@ use crate::users;
 use actix_web::Error;
 use rusqlite::{params,Connection,Result as sqlres,Error as sqlerr};
 use serde_json::{Result as sjr,Value,Error as serr};
-use serde::{Deserialize, Serialize};
 use serde_derive::{Deserialize,Serialize};
 
 

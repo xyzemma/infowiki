@@ -6,6 +6,8 @@ edition = "2024"
 [dependencies]
 actix-cors = "0.7.1"
 actix-web = "4"
+diesel = { version="2.2.0",features = ["sqlite", "returning_clauses_for_sqlite_3_35"]}
+dotenvy = "0.15"
 pest = "2.8.1"
 pest_derive = "2.8.1"
 rusqlite = { version = "0.37.0", features = ["bundled"] }
